@@ -4,6 +4,8 @@
 
 ## 现状（2026-10-29）
 
+- **未发布（2026-10-30，#760 入口调整）**：户主要求点击网络时打开海信左侧菜单并选中网络设置，不直接进 Wi-Fi 列表。完整版 `SystemProbe` 和 Lite `SystemIntents` 的海信显式入口改用 `android.settings.NETWORK_SETTINGS`，其他电视候选顺序和失败回退不变。19 项设置入口测试、standard / guard / Lite release 构建和 Lite lint 通过。ADB 恢复连接后，在 H55E9A / Android 8 上用独立包名的 release 诊断包直接调用当前 `SystemProbe`，speed 编译后确认左侧「网络」高亮、右侧显示网络设置总览，不进无线列表；`ethernet=false/true` 都相同（实际网络未切换）。诊断包和电视临时截图已清理，未覆盖安装原有 Aerial 1.69，未改 HOME、网络配置或户主数据。完整控制中心点击流程、85E5N Pro+ 和 Android 4.x Lite 仍待验证，见 `docs/devices/hisense-vidaa.md`。
+
 - **未发布（2026-10-29 晚，全量 issue / PR 巡检第二轮）**：开着 256 个 issue、31 个 PR，最后是用户的 60 个和 5 个 PR 逐个看过，归类在 `local/triage/2026-10-29b-full.md`，回复清单 `local/triage/replies-2026-10-29b.py`，发出记录 `posted-2026-10-29b.txt`。回复约 85 条，关闭 issue 50 个左右（其中 25 个是维护者最后发言、3 天以上没回音的）。小米 MFTR0 关机（还挂着 #901 的还原，见 `local/TVS.md`），这轮在**小米显示器 MFFU1**（192.168.1.50，Android 14）上测，测完切回 HDMI 2、用量统计改回 allow；显示器上的 Aerial 从 1.53 换成了 main 的 standard release（versionCode 仍 85）。TCL 没装（多屏互动要 versionCode 变大，发版时再装）。代码（都已推 main）：
   ① 1b36e44 #845：极米 MT9660 看片时 Aerial 在后台被杀、守护被固件拿出无障碍列表，复活时守护把自己放回去，没有用量统计权限就把未知前台当原桌面，把 Aerial 拉到 fongmi 上面。改为 Aerial 死时不在前台、查不到前台、不在开机窗口时不动；拉回 / 不拉回都写进 Aerial 自己的诊断日志。MFFU1 上撤掉用量统计、打开夸克后 `am crash` + 拿掉守护模拟：1.69 在复活 1.5 秒后把 Aerial 拉到夸克上（复现），改后夸克一直在前台、日志 `leaving it`。极米没验证。
   ② 78cd26e #882 #874 #599：调谐器类输入只认系统包（VLC 预览频道的输入让小米 MFTP0 的 HDMI 兜底不出现）；小米电视系统没列 HDMI 时用小米播放器补 HDMI 1–3（hdmiN_order 优先，否则 23 起；盒子不补；MiTV4C 两个）。MFFU1 上 `list_sources` 前后一致（它本来列了 HDMI，不触发兜底）。MFTP0、MiTV4 20.3.6、小米电视 2 都没验证。

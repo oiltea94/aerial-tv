@@ -76,6 +76,23 @@ Vidda C1S 激光投影（VIDAA_TV，MT9669，Android 9，PR #545）：聚好看�
 
 ## 控制中心网络入口（H55E9A，#760）
 
+2026-10-30 调整：按户主要求，海信专用入口从 `android.settings.WIFI_SETTINGS` 改为
+`android.settings.NETWORK_SETTINGS`，显式组件仍为 `com.hisense.systemsettings.MainActivity`。
+目标是打开海信左侧菜单并选中网络设置，不直接进入无线网络列表。留存的 H55E9A
+`TvSettings_V6.apk` 清单确认这个 action 与 Wi-Fi action 分别声明；完整版和 Lite 同步修改，
+其他电视的候选顺序、通用设置入口和完整版的失败回退不变。
+本轮自动化：`HisenseSettingsTest` 8 项和 `XgimiSettingsTest` 11 项通过；standard、guard、Lite
+release 构建及 Lite lint 通过。全量测试因 Robolectric 等待下载额外的 Android 测试镜像中止，
+不计为通过。IDE 构建超时后曾与命令行构建争用 DEX 文件，等待前者退出后串行重跑成功。
+**新入口真机验证（同日 ADB 恢复后）**：H55E9A / Android 8 上，先用 shell 打开该 action，
+再用独立包名的 release 诊断包直接编译、调用当前 `SystemProbe`，执行 speed 编译后测试。
+截图确认左侧菜单的「网络」高亮，右侧显示无线网络、有线网络、网络诊断等总览，不进入
+无线网络列表；系统启动日志确认 action 由诊断包普通应用 UID 发起。`ethernet=false/true`
+均打开同一分类（只切换传参，没有切换实际连接），返回键可退出菜单回到诊断页。
+临时包和电视上的截图文件已清理，原有 Aerial 1.69 保留，未改 HOME、网络配置或户主数据。
+验证边界：未覆盖安装完整 Aerial，控制中心点击和闪退回退的完整生命周期仍待回归；
+85E5N Pro+、Android 4.x Lite、实际连接/更换网络及高级选项未测试。以下为 10 月 28 日旧入口记录。
+
 2026-10-28，在 H55E9A（Android 8.0.0 / SDK 26）确认：`com.android.tv.settings`
 同时包含 Android TV 的 `connectivity.NetworkActivity` 和海信自己的
 `com.hisense.systemsettings.MainActivity`。原来的候选顺序先打开前者；#760 的用户报告
